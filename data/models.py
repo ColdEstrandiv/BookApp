@@ -1,15 +1,13 @@
-# export functions here
-
 from sqlalchemy import String
-from sqlalchemy.orm import declarative_base, DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import mapped_column
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy import Integer
-import click
 
-engine = create_engine("sqlite:///data/main.sqlite", echo=True)
+
+engine = create_engine("sqlite:///data.sqlite", echo=True)
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -17,6 +15,7 @@ session = Session()
 class Base(DeclarativeBase):
     ...
 
+# TODO: add username unique column
 class User(Base):
     __tablename__ = "user"
     id = mapped_column(Integer, primary_key=True)
@@ -25,12 +24,15 @@ class User(Base):
     email = mapped_column(String())
     password = mapped_column(String())
 
-class library(Base):
+# TODO: maybe add name column
+class Library(Base):
     __tablename__ = "library"
     id = mapped_column(Integer, primary_key=True)
     owner = mapped_column(ForeignKey("user.id"))
 
-class libraryBook(Base):
+# TODO: Devise a way to determine if the user who owns the library has finished the book
+    # maybe add page count too "Book" and write a function to add up Readingsessions in Bookprogress
+class LibraryBook(Base):
     __tablename__ = "libraryBook"
     id = mapped_column(Integer, primary_key=True)
     bookId = mapped_column(ForeignKey("book.id")) 
