@@ -13,13 +13,14 @@ session = Session()
 def cli():
     pass
 
-@click.command(help="-d firstName [], -d lastName [], -d email [], -d password []")
+@click.command(help="-d firstName < >, -d lastName < >, userName < >, -d email < >, -d password < >")
 @click.option("--dict", "-d", "cliDict", type=(str, str), multiple=True,)
 def create_user(cliDict):
     newUserDict = dict(cliDict)
     # click.echo(newUserDict["firstName"])
     newUser = User(firstName=newUserDict['firstName'], 
-    lastName=newUserDict['lastName'], 
+    lastName=newUserDict['lastName'],
+    userName=newUserDict['userName'],
     email=newUserDict['email'], 
     password=newUserDict['password'])
     
@@ -34,7 +35,7 @@ def create_library(userid):
     session.add(newLibrary)
     session.commit()
 
-@click.command(help="-d title <>, -d author <>")
+@click.command(help="-d title < >, -d author < >, -d pageCount < >")
 @click.option("--dict", "-d", "cliDict", type=(str, str), multiple=True,)
 def create_book(cliDict):
     newBookDict = dict(cliDict)
@@ -63,11 +64,12 @@ def create_review(bookid, userid, body):
     session.add(newReview)
     session.commit()
 
-@click.command(help="<userId> <bookId>")
+@click.command(help="<userId> <bookId> <status>")
 @click.argument('userid')
 @click.argument('bookid')
-def create_book_progress(userid, bookid):
-    newBookProg = BookProgress(user=userid, book=bookid)
+@click.argument('state')
+def create_book_progress(userid, bookid, state):
+    newBookProg = BookProgress(user=userid, book=bookid, status=state)
 
     session.add(newBookProg)
     session.commit()
@@ -76,8 +78,10 @@ def create_book_progress(userid, bookid):
 @click.argument('bookprogid')
 @click.argument('startpg')
 @click.argument('stoppg')
-def create_read_session(bookprogid, startpg, stoppg):
-    newReadSession = ReadingSession(bookProgressId=bookprogid, start=startpg, stop=stoppg)
+@click.argument('datedata')
+@click.argument('readtime')
+def create_read_session(bookprogid, startpg, stoppg, datedata, readtime):
+    newReadSession = ReadingSession(bookProgressId=bookprogid, start=startpg, stop=stoppg, date=datedata, time=readtime)
 
     session.add(newReadSession)
     session.commit()

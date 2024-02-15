@@ -21,12 +21,14 @@ class User(Base):
     id = mapped_column(Integer, primary_key=True)
     firstName = mapped_column(String())
     lastName = mapped_column(String())
+    userName = mapped_column(String())
     email = mapped_column(String())
     password = mapped_column(String())
 
 # TODO: maybe add name column
 class Library(Base):
     __tablename__ = "library"
+    name = mapped_column(String())
     id = mapped_column(Integer, primary_key=True)
     owner = mapped_column(ForeignKey("user.id"))
 
@@ -43,6 +45,7 @@ class Book(Base):
     id = mapped_column(Integer, primary_key=True)
     title = mapped_column(String())
     author = mapped_column(String())
+    pageCount = mapped_column(Integer())
 
 class Review(Base):
     __tablename__ = "review"
@@ -56,6 +59,8 @@ class BookProgress(Base):
     id = mapped_column(Integer, primary_key=True)
     user = mapped_column(ForeignKey("user.id"))
     book = mapped_column(ForeignKey("book.id"))
+    # status = To Be Read, Started, Finished
+    status = mapped_column(String())
 
 class ReadingSession(Base):
     __tablename__ = "readingSession"
@@ -63,6 +68,10 @@ class ReadingSession(Base):
     bookProgressId = mapped_column(ForeignKey("bookProgress.id"))
     start = mapped_column(String())
     stop = mapped_column(String())
+    date = mapped_column(String())
+    time = mapped_column(String())
+
+
 
 # This checks if tables exists and creates them if they dont
 Base.metadata.create_all(engine, checkfirst=True)

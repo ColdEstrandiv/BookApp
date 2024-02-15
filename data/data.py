@@ -16,7 +16,7 @@ def cli():
 @click.command
 @click.argument('username')
 def get_user(username):
-    user = db.query(User).filter(User.firstName==str(username)).first()
+    user = db.query(User).filter(User.userName==str(username)).first()
     
     libraries = db.query(Library).filter(Library.owner == user.id).all()
     librariesId = []
@@ -32,13 +32,29 @@ def get_user(username):
         readingData = (f'ID: {reading[i].id}, BookProgressID: {reading[i].bookProgressId}, Start: {reading[i].start}, Stop: {reading[i].stop}')
         allReading.append(readingData)
 
-    
-    
-    
+
     print(f'User \n ID: {user.id}, Name {user.firstName} {user.lastName}, Email {user.email}, Password {user.password}')
     print(f'Library ids: {librariesId}')
     pprint(allReading)
 
+@click.command
+@click.argument('booktitle')
+def get_book(booktitle):
+    getBook = db.query(Book).filter(Book.title==str(booktitle)).first()
+    
+    libraryBook = db.query(LibraryBook).filter(LibraryBook.bookId==getBook.id).all()
+    librayIds = []
+    userIds = []
+
+    for i in range(len(libraryBook)):
+        librayIds.append(libraryBook[i].libraryId)
+    
+    for i in range(len(librayIds)):
+        findUser = db.query(Library)
+
+
+
+cli.add_command(get_book)
 cli.add_command(get_user)
 
 if __name__ == "__main__":
