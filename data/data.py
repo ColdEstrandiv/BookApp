@@ -17,7 +17,7 @@ def cli():
 
 # use where instead of where
 @click.command
-@click.argument('username')
+@click.argument("username")
 def get_user(username):
     user = db.query(User).where(User.userName == str(username)).first()
     one_week = datetime.now() - timedelta(days=7)
@@ -38,7 +38,7 @@ def get_user(username):
 
     
 @click.command
-@click.argument('book_title')
+@click.argument("book_title")
 def get_book(book_title):
     book = db.query(Book).where(Book.title == str(book_title)).first()
     print(book.title)

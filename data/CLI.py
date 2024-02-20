@@ -1,4 +1,4 @@
-from models import User, Library, Book, Review, BookProgress, ReadingSession
+from models import User, Library, Book, Review, BookProgress, ReadingSession, Admin
 import click
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
@@ -14,31 +14,31 @@ session = Session()
 def cli():
     pass
 
-@click.command(help="-d firstName < >, -d lastName < >, userName < >, -d email < >, -d password < >")
+@click.command(help="-d firstName < >, -d lastName < >, username < >, -d email < >, -d password < >")
 @click.option("--dict", "-d", "cliDict", type=(str, str), multiple=True,)
 def create_user(cliDict):
     newUserDict = dict(cliDict)
     # click.echo(newUserDict["firstName"])
     newUser = User(firstName=newUserDict["firstName"], 
     lastName=newUserDict["lastName"],
-    username=newUserDict["userName"],
+    username=newUserDict["username"],
     email=newUserDict["email"], 
     password=newUserDict["password"])
     
     session.add(newUser)
     session.commit()
 
-@click.command(help="<userName> <libraryName>")
+@click.command(help="<username> <libraryName>")
 @click.argument("user")
 @click.argument("library_name")
 def create_library(user, library_name):
-    userDb = session.query(User).where(User.userName == str(user)).first()
+    userDb = session.query(User).where(User.username == str(user)).first()
     newLibrary = Library(name=library_name, user=userDb)
 
     session.add(newLibrary)
     session.commit()
 
-@click.command(help="-d title < >, -d author < >, pageCount < >")
+@click.command(help="-d title < >, -d author < >, -d pageCount < >")
 @click.option("--dict", "-d", "cliDict", type=(str, str), multiple=True,)
 def create_book(cliDict):
     newBookDict = dict(cliDict)
@@ -49,23 +49,23 @@ def create_book(cliDict):
     session.add(newBook)
     session.commit()
 
-@click.command(help="<bookId> <userName> <body>")
+@click.command(help="<bookId> <username> <body>")
 @click.argument("book_id")
 @click.argument("username")
 @click.argument("body")
 def create_review(book_id, username, body):
-    userDb = session.query(User).where(User.userName == str(username)).first()
+    userDb = session.query(User).where(User.username == str(username)).first()
     bookDb = session.query(Book).where(Book.id == int(book_id)).first()
     newReview = Review(user=userDb, book=bookDb, content=str(body))
 
     session.add(newReview)
     session.commit()
 
-@click.command(help="<userName> <bookId>")
+@click.command(help="<username> <bookId>")
 @click.argument("username")
 @click.argument("book_id")
 def create_book_progress(username, book_id):
-    userDb = session.query(User).where(User.userName == str(username)).first()
+    userDb = session.query(User).where(User.username == str(username)).first()
     bookDb = session.query(Book).where(Book.id == int(book_id)).first()
     newBookProg = BookProgress(user=userDb, book=bookDb)
 
@@ -102,15 +102,24 @@ def complete_book(book_progress_id):
     bookProgressDb.status = "Completed"
     session.commit()
 
+@click.command(help="<username> <password>")
+@click.argument("admin_username")
+@click.argument("admin_password")
+def create_admin(admin_username, admin_password):
+    new_admin = Admin(username=admin_username, password=admin_password)
+    
+    session.add(new_admin)
+    session.commit()
+
 @click.command(help="<Object> <id>")
 @click.argument("object")
 @click.argument("object_id")
 def del_obj_id(object, object_id):
     match str(object):
         case "readingSession":
-            deletedEntity = session.query(ReadingSession).where(ReadingSession.id == int(object_id)).first
+            deletedEntity = session.query(ReadingSession).where(ReadingSession.id == int(object_id)).first()
             session.delete(deletedEntity)
-            session.commit
+            session.commit()
 
 
 cli.add_command(create_user)
@@ -122,6 +131,7 @@ cli.add_command(create_read_session)
 cli.add_command(add_library_book)
 cli.add_command(complete_book)
 cli.add_command(del_obj_id)
+cli.add_command(create_admin)
 
 if __name__ == "__main__":
     cli()
