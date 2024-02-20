@@ -8,7 +8,7 @@ engine = create_engine("sqlite:///data.sqlite", echo=True)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-#TODO: could maybe make all off these one function taking an argument then a dictionary
+#TODO: Exception handling for duplicate unique entries, or bad inputs
 
 @click.group()
 def cli():
@@ -21,7 +21,7 @@ def create_user(cliDict):
     # click.echo(newUserDict["firstName"])
     newUser = User(firstName=newUserDict["firstName"], 
     lastName=newUserDict["lastName"],
-    userName=newUserDict["userName"],
+    username=newUserDict["userName"],
     email=newUserDict["email"], 
     password=newUserDict["password"])
     
@@ -79,7 +79,7 @@ def create_book_progress(username, book_id):
 def create_read_session(bookprog_id, page_count, readtime):
     bookProgDb = session.query(BookProgress).where(BookProgress.id == int(bookprog_id)).first()
     timeObject = datetime.strptime(readtime, "%H:%M").time()
-    newReadSession = ReadingSession(bookProgress=bookProgDb, pageCount = int(page_count), time = timeObject)
+    newReadSession = ReadingSession(bookProgress=bookProgDb, pageCount = int(page_count), readTime = timeObject)
 
     session.add(newReadSession)
     session.commit()
@@ -94,6 +94,24 @@ def add_library_book(library_id, book_id):
     libraryDb.books.append(bookDb)
     session.commit()
 
+@click.command(help="<bookProgressId>")
+@click.argument("book_progress_id")
+def complete_book(book_progress_id):
+    bookProgressDb = session.query(BookProgress).where(BookProgress.id == int(book_progress_id)).first()
+
+    bookProgressDb.status = "Completed"
+    session.commit()
+
+@click.command(help="<Object> <id>")
+@click.argument("object")
+@click.argument("object_id")
+def del_obj_id(object, object_id):
+    match str(object):
+        case "readingSession":
+            deletedEntity = session.query(ReadingSession).where(ReadingSession.id == int(object_id)).first
+            session.delete(deletedEntity)
+            session.commit
+
 
 cli.add_command(create_user)
 cli.add_command(create_library)
@@ -102,6 +120,8 @@ cli.add_command(create_review)
 cli.add_command(create_book_progress)
 cli.add_command(create_read_session)
 cli.add_command(add_library_book)
+cli.add_command(complete_book)
+cli.add_command(del_obj_id)
 
 if __name__ == "__main__":
     cli()

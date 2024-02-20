@@ -24,7 +24,7 @@ class User(Base):
     id = mapped_column(Integer, primary_key=True)
     firstName = mapped_column(String())
     lastName = mapped_column(String())
-    userName = mapped_column(String(), unique=True)
+    username = mapped_column(String(), unique=True)
     email = mapped_column(String(), unique=True)
     password = mapped_column(String())
 
@@ -75,7 +75,7 @@ class BookProgress(Base):
     id = mapped_column(Integer, primary_key=True)
     userId = mapped_column(ForeignKey("user.id"))
     bookId = mapped_column(ForeignKey("book.id"))
-    # status = Started, Finished
+    # status = Started, Completed
     status = mapped_column(String(), default= "Started")
 
     user = relationship("User", back_populates="bookProgresses")
@@ -87,10 +87,15 @@ class ReadingSession(Base):
     id = mapped_column(Integer, primary_key=True)
     bookProgressId = mapped_column(ForeignKey("bookProgress.id"))
     pageCount = mapped_column(Integer())
-    date = mapped_column(DateTime, default=datetime.utcnow)
-    time = mapped_column(Time())
+    dateMade = mapped_column(DateTime, default=datetime.utcnow)
+    readTime = mapped_column(Time())
 
     bookProgress = relationship("BookProgress", back_populates= "readingSessions")
 
+class Admin(Base):
+    __tablename__ = "admins"
+    id = mapped_column(Integer, primary_key=True)
+    username = mapped_column(String(), unique=True)
+    password = mapped_column(String())
 # This checks if tables exists and creates them if they dont
 Base.metadata.create_all(engine, checkfirst=True)
