@@ -19,7 +19,7 @@ def cli():
 @click.command
 @click.argument("username")
 def get_user(username):
-    user = db.query(User).where(User.userName == str(username)).first()
+    user = db.query(User).where(User.username == str(username)).first()
     one_week = datetime.now() - timedelta(days=7)
 
     for library in sorted(user.libraries, key=lambda l: l.name):
@@ -31,9 +31,9 @@ def get_user(username):
     for bP in sorted(user.bookProgresses, key=lambda b: b.status):
         print(f"{bP.status} {bP.book.title}")
 
-        for r in sorted(bP.readingSessions, reverse=True, key=lambda d: d.date):
-            if r.date >= one_week:
-                print(f"Read {r.pageCount} pages")
+        for r in sorted(bP.readingSessions, reverse=True, key=lambda d: d.dateMade):
+            if r.dateMade >= one_week:
+                print(f"Read {r.pageCount} pages on {r.dateMade}")
             
 
     
