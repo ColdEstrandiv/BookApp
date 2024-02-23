@@ -3,18 +3,11 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import mapped_column
 from sqlalchemy import Column
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
 from sqlalchemy import Integer
-from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import relationship
 from sqlalchemy import DateTime, Time
 from sqlalchemy import Table
 from datetime import datetime
-
-engine = create_engine("sqlite:///data.sqlite", echo=True)
-Session = sessionmaker(bind=engine)
-session = Session()
 
 class Base(DeclarativeBase):
     ...
@@ -45,9 +38,6 @@ class Library(Base):
     # The secondary and "library_book_association" is required for many-to-many relationships
     books = relationship("Book", secondary="library_book_association", back_populates= "libraries")
     user = relationship("User", back_populates= "libraries")
-
-
-
 
 class Book(Base):
     __tablename__ = "book"
@@ -97,5 +87,3 @@ class Admin(Base):
     id = mapped_column(Integer, primary_key=True)
     username = mapped_column(String(), unique=True)
     password = mapped_column(String())
-# This checks if tables exists and creates them if they dont
-Base.metadata.create_all(engine, checkfirst=True)
