@@ -87,15 +87,16 @@ def get_user_bookProgresses():
         case "POST":
             getUser = db.query(User).where(User.id == int(userBookProgress["userId"])).first()
             getBook = db.query(Book).where(Book.id == int(userBookProgress["bookId"])).first()
-            newBookProgress = BookProgress(
-                user=getUser,
-                book=getBook
-            )
             
             if not getBook or not getUser:
                 return "Book or user not found", 200
             
             else:
+                newBookProgress = BookProgress(
+                    user=getUser,
+                    book=getBook
+                )
+
                 db.add(newBookProgress)
                 db.commit()
                 return f"Bookprogress for {getBook.title} by {getUser.username}"
@@ -128,15 +129,25 @@ def get_user_reads():
                 return "User not found", 200
             
             elif userRead["timeFrame"]  == "week":
-                result.append("Reads This week")
-                one_week = datetime.now() - timedelta(days=7)
+                result.append("Reads past week")
+                oneWeek = datetime.now() - timedelta(days=7)
 
                 for bP in sorted(getUserRead.bookProgresses, key=lambda b: b.status):
                     result.append(f"{bP.status} {bP.book.title}")
                     for r in sorted(bP.readingSessions, reverse=True, key=lambda d: d.dateMade):
-                        if r.dateMade >= one_week:
+                        if r.dateMade >= oneWeek:
                             result.append(f"SessionIDRead {r.pageCount} pages on {r.dateMade}")
             
+            elif userRead["timeFrame"] == "month":
+                result.append("Reads past month")
+                oneMonth = datetime.now() - timedelta(days=30)
+
+                for bP in sorted(getUserRead.bookProgresses, key=lambda b: b.status):
+                    result.append(f"{bP.status} {bP.book.title}")
+                    for r in sorted(bP.readingSessions, reverse=True, key=lambda d: d.dateMade):
+                        if r.dateMade >= oneMonth:
+                            result.append(f"SessionIDRead {r.pageCount} pages on {r.dateMade}")
+
             elif userRead["timeFrame"] == "all":
                 result.append("All Reads")
                 
@@ -202,7 +213,7 @@ def get_libraries_by_user():
                 return jsonify(result)
 
 
-@app.route("/library", methods=["GET", "POST", "DELETE", "PUT"])
+@app.route("/user/library", methods=["GET", "POST", "DELETE", "PUT"])
 def get_library_by_id():
     db = get_db()
     getLibrary = request.json
@@ -256,21 +267,125 @@ def get_library_by_id():
                 return jsonify(f"{deletedLibrary.name} has been deleted"), 200
         
         case "PUT":
-            ...
+            library = db.query(Library).where(Library.id == int(getLibrary["id"])).first()
+            book = db.query(Book).where(Book.id == int(getLibrary["bookId"])).first()
 
-@app.route("/book")
+
+
+            if not library:
+                return "Library not found", 200
+            
+            elif not book:
+                return "Book not found", 200
+            
+            else:
+                library.books.append(book)
+                db.commit()
+                return f"{book.title} by {book.author} added to {library.name}"
+                       
+@app.route("/books")
 def get_book():
-    # Show Book data, users reading book
-    ...
+    db = get_db()
+    getBook = request.json
+
+    match request.method:
+        case "GET":
+            book = db.query(Book).where(Book.id == int(getBook["id"])).first()
+
+            if not book:
+                return "Book not found", 200
+            
+            else:
+                result = {
+                    "id": book.id,
+                    "title": book.title,
+                    "author": book.author,
+                    "pageCount": book.pageCount
+                }
+
+                return jsonify(result), 200
 
 
-@app.route("/readings")
-def get_user_book_reads():
-    ...
+        case "POST":
+            newBook = Book(title=getBook["title"],
+                           author=getBook["author"],
+                           pageCount=getBook["pageCount"]
+                        )
 
-@app.route("/reviews")
+            db.add(newBook)
+            db.commit()
+
+            return f"{book.title} by {book.author} has been added to database"
+        
+        case "DELETE":
+            deletedBook = db.query(Book).where(Book.id == int(getBook["id"])).first()
+
+            if not book:
+                return "Book not found", 200
+            
+            else:
+                db.delete(deletedBook)
+                db.commit()
+                return f"{book.title} by {book.author} has been deleted"
+
+# @app.route("/readings")
+# def get_user_book_reads():
+#     db = get_db()
+#     getReads = request.json
+
+@app.route("/review", methods=["GET", "POST", "DELETE"])
 def leave_review():
-    ...
+    db = get_db()
+    getReview = request.json
+
+    match request.method:
+        case "GET":
+            review = db.query(Review).where(Review.id == getReview["id"]).first()
+
+            if not review:
+                return "Review not found", 200
+            
+            else:
+                result = {
+                    "id": review.id,
+                    "user": review.user.username,
+                    "book": f"{review.book.title} by {review.book.author}",
+                    "content": review.content
+                }
+
+                return jsonify(result), 200
+
+        case "POST":
+            getUser = db.query(User).where(User.id == int(getReview["userId"])).first()
+            getBook = db.query(Book).where(Book.id == int(getReview["bookId"])).first()
+
+            if not getBook or not getUser:
+                return "Book or user not found", 200
+            
+            else:
+                newReview = Review(
+                    user=getUser,
+                    book=getUser,
+                    content=getReview["content"]
+                )
+
+                db.add(newReview)
+                db.commit()
+
+                return "Review made", 200
+            
+        
+        case "DELETE":
+            deletedReview = db.query(Review).where(Review.id == getReview["id"]).first()
+
+            if not review:
+                return "Review not found", 200
+            
+            else:
+                db.delete(deletedReview)
+                db.commit()
+
+                return f"Review id:{deletedReview.id} has be deleted", 200
 
 # TODO: intergrate (https://openlibrary.org/developers/api)
 @app.route("/admin")
