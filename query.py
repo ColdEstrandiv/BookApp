@@ -1,11 +1,11 @@
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from models import User, Library, Book, Review, BookProgress, ReadingSession
+from data import User, Library, Book, Review, BookProgress, ReadingSession
 import click
 from pprint import pprint
 from datetime import datetime, timedelta
 
-engine = create_engine("sqlite:///data.sqlite", echo=False)
+engine = create_engine("sqlite:///data/data.sqlite", echo=False)
 Session = sessionmaker(bind=engine)
 db = Session()
 
@@ -13,11 +13,12 @@ db = Session()
 def cli():
     pass
 
-# TODO: take time to meaingfully group items
+# TODO: Seperate queries with options
 
 # use where instead of where
 @click.command
 @click.argument("username")
+@click.option()
 def get_user(username):
     user = db.query(User).where(User.username == str(username)).first()
     one_week = datetime.now() - timedelta(days=7)

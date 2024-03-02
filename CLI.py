@@ -1,10 +1,11 @@
-from models import User, Library, Book, Review, BookProgress, ReadingSession, Admin
+from data import User, Library, Book, Review, BookProgress, ReadingSession, Admin
 import click
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from datetime import datetime
+from sqlalchemy.exc import IntegrityError
 
-engine = create_engine("sqlite:///data.sqlite", echo=True)
+engine = create_engine("sqlite:///data/data.sqlite", echo=True)
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -26,7 +27,11 @@ def create_user(cliDict):
     password=newUserDict["password"])
     
     session.add(newUser)
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        print("username or email already in use")
 
 @click.command(help="<username> <libraryName>")
 @click.argument("user")
