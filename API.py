@@ -3,7 +3,8 @@ from flask import Flask, jsonify, request
 from data import get_db
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timedelta
-from marshSchema import IdRequest, CreateUser, UserBookId, UserRead, CreateUserRead, CreateLibrary, LibraryBookId, CreateBook, CreateReview
+from marshSchema import IdJsonValidation, CreateUserJsonValidation, UserBookIdJsonValidation 
+from marshSchema import UserReadJsonValidation, CreateUserReadJsonValidation, CreateLibraryJsonValidation, LibraryBookIdJsonValidation, CreateBookJsonValidation, CreateReviewJsonValidation
 
 # TODO: Postman script 
 # TODO: flask BluePrints
@@ -14,13 +15,15 @@ app = Flask(__name__)
 def user():
     db = get_db()
     user = request.json
+    createUserValidation = CreateUserJsonValidation()
+    idValidation = IdJsonValidation()
+    idValidationError = idValidation.validate(user)
+
     match request.method:
 
         case "GET":
-            idError = IdRequest().validate(user)
-
-            if idError:
-                return idError, 422
+            if idValidationError:
+                return idValidationError, 422
 
             else:
                 getUser = db.query(User).where(User.id == int(user["id"])).first()
@@ -40,10 +43,10 @@ def user():
                     return jsonify(result), 200
 
         case "POST":
-            createUserError = CreateUser().validate(user)
+            createUserJsonValidationError = createUserValidation.validate(user)
 
-            if createUserError:
-                return createUserError, 422
+            if createUserJsonValidationError:
+                return createUserJsonValidationError, 422
             
             else:
                 newUser = User(
@@ -64,10 +67,8 @@ def user():
                     return "Username or email already in use"
             
         case "DELETE":
-            idError = IdRequest().validate(user)
-            
-            if idError:
-                return idError, 422
+            if idValidation:
+                return idValidation, 422
             
             else:
                 deletedUser = db.query(User).where(User.id == int(user["id"])).first()
@@ -84,13 +85,14 @@ def user():
 def get_user_bookProgresses():
     db = get_db()
     userBookProgress = request.json
+    idValidation = IdJsonValidation()
+    userBookIdValidation = UserBookIdJsonValidation()
+    idValidationError = idValidation.validate(userBookProgress)
 
     match request.method:
         case "GET":
-            idError = IdRequest().validate(userBookProgress)
-
-            if idError:
-                return idError, 422
+            if idValidationError:
+                return idValidationError, 422
 
             else:
                 getUserBookProgess = db.query(BookProgress).where(BookProgress.id == userBookProgress["id"]).first()
@@ -109,10 +111,10 @@ def get_user_bookProgresses():
                     return jsonify(result), 200
         
         case "POST":
-            userBookIdError = UserBookId().validate(userBookProgress)
+            userBookIdValidationError = userBookIdValidation.validate(userBookProgress)
 
-            if userBookIdError:
-                return userBookIdError, 422
+            if userBookIdValidationError:
+                return userBookIdValidationError, 422
             
             else:
                 getUser = db.query(User).where(User.id == int(userBookProgress["userId"])).first()
@@ -132,10 +134,8 @@ def get_user_bookProgresses():
                     return f"Bookprogress for {getBook.title} by {getUser.username} created", 200
         
         case "DELETE":
-            idError = IdRequest().validate(userBookProgress)
-
-            if idError:
-                return idError, 422
+            if idValidationError:
+                return idValidationError, 422
             
             else:
                 deletedBookProgress = db.query(BookProgress).where(BookProgress.id == userBookProgress["id"]).first()
@@ -156,25 +156,27 @@ def get_user_bookProgresses():
 def get_user_reads():
     db = get_db()
     userRead = request.json
+    createUserReadValidation = CreateUserReadJsonValidation()
+    idTimeFrameValidation = UserReadJsonValidation()
+    idTimeFrameValidationError = UserReadJsonValidation().validate(userRead)
+
     match request.method:
         case "GET":
-            idError = UserRead().validate(userRead)
-
-            if idError:
-                return idError, 422
+            if idTimeFrameValidationError:
+                return idValidationError, 422
             
             else:
-                getUserRead = db.query(User).where(User.id == int(userRead["id"])).first()
+                getUserReadJsonValidation = db.query(User).where(User.id == int(userRead["id"])).first()
                 result = []
 
-                if not getUserRead:
+                if not getUserReadJsonValidation:
                     return "User not found", 404
                 
                 elif userRead["timeFrame"]  == "week":
                     result.append("Reads past week")
                     oneWeek = datetime.now() - timedelta(days=7)
 
-                    for bP in sorted(getUserRead.bookProgresses, key=lambda b: b.status):
+                    for bP in sorted(getUserReadJsonValidation.bookProgresses, key=lambda b: b.status):
                         result.append(f"{bP.status} {bP.book.title}")
                         for r in sorted(bP.readingSessions, reverse=True, key=lambda d: d.dateMade):
                             if r.dateMade >= oneWeek:
@@ -184,7 +186,7 @@ def get_user_reads():
                     result.append("Reads past month")
                     oneMonth = datetime.now() - timedelta(days=30)
 
-                    for bP in sorted(getUserRead.bookProgresses, key=lambda b: b.status):
+                    for bP in sorted(getUserReadJsonValidation.bookProgresses, key=lambda b: b.status):
                         result.append(f"{bP.status} {bP.book.title}")
                         for r in sorted(bP.readingSessions, reverse=True, key=lambda d: d.dateMade):
                             if r.dateMade >= oneMonth:
@@ -193,7 +195,7 @@ def get_user_reads():
                 elif userRead["timeFrame"] == "all":
                     result.append("All Reads")
                     
-                    for bP in sorted(getUserRead.bookProgresses, key=lambda b: b.status):
+                    for bP in sorted(getUserReadJsonValidation.bookProgresses, key=lambda b: b.status):
                         result.append(f"{bP.status} {bP.book.title}")
                         for r in sorted(bP.readingSessions, reverse=True, key=lambda d: d.dateMade):
                             result.append(f"SessionID: {r.id}, Read {r.pageCount} pages on {r.dateMade}")
@@ -201,10 +203,10 @@ def get_user_reads():
                 return jsonify(result), 200
         
         case "POST":
-            createUserReadError = CreateUserRead().validate(userRead)
+            createUserReadValidationError = createUserReadValidation.validate(userRead)
 
-            if createUserReadError:
-                return createUserReadError, 422
+            if createUserReadValidationError:
+                return createUserReadValidationError, 422
             
             else:
                 getBookProgress = db.query(BookProgress).where(BookProgress.id == int(userRead["id"])).first()
@@ -228,10 +230,10 @@ def get_user_reads():
                     return "Read Session Created", 200
 
         case "DELETE":
-            idError = IdRequest().validate(userRead)
+            idValidationError = IdJsonValidation().validate(userRead)
 
-            if idError:
-                return idError, 422
+            if idValidationError:
+                return idValidationError, 422
             
             else:
                 deletedRead = db.query(ReadingSession).where(ReadingSession.id == int(userRead["id"])).first()
@@ -248,12 +250,13 @@ def get_user_reads():
 def get_libraries_by_user():
     db = get_db()
     getLibrary = request.json
+    idValidation = IdJsonValidation()
+    idValidationError = idValidation.validate(getLibrary)
+
     match request.method:
         case "GET":
-            idError = IdRequest().validate(getLibrary)
-
-            if idError:
-                return idError, 422
+            if idValidationError:
+                return idValidationError, 422
             
             else:
                 user = db.query(User).where(User.id == getLibrary["id"]).first()
@@ -273,13 +276,15 @@ def get_libraries_by_user():
 def get_library_by_id():
     db = get_db()
     getLibrary = request.json
+    idValidation = IdJsonValidation()
+    createLibraryValidation = CreateLibraryJsonValidation()
+    libraryBookValidation = LibraryBookIdJsonValidation()
+    idValidationError = idValidation.validate(getLibrary)
 
     match request.method:
         case "GET":
-            idError = IdRequest().validate(getLibrary)
-
-            if idError:
-                return idError, 422
+            if idValidationError:
+                return idValidationError, 422
             
             else:
                 library = db.query(Library).where(Library.id == int(getLibrary["id"])).first()
@@ -302,10 +307,10 @@ def get_library_by_id():
                     return jsonify(result), 200
         
         case "POST":
-            createLibraryError = CreateLibrary().validate(getLibrary)
-
-            if createLibraryError:
-                return createLibraryError, 422
+            createLibraryValidationError = createLibraryValidation.validate(getLibrary)
+            
+            if createLibraryValidationError:
+                return createLibraryValidationError, 422
             
             else:
                 libraryUser = db.query(User).where(User.id == int(getLibrary["id"])).first()
@@ -324,10 +329,8 @@ def get_library_by_id():
                     return jsonify(f"{newLibrary.name} created for {libraryUser.username}"), 200
 
         case "DELETE":
-            idError = IdRequest().validate(getLibrary)
-
-            if idError:
-                return idError, 422
+            if idValidationError:
+                return idValidationError, 422
             
             else:
                 deletedLibrary = db.query(Library).where(Library.id == int(getLibrary["id"])).first()
@@ -341,10 +344,10 @@ def get_library_by_id():
                     return jsonify(f"{deletedLibrary.name} has been deleted"), 200
         
         case "PUT":
-            libraryBookError = LibraryBookId().validate(getLibrary)
+            libraryBookValidationError = libraryBookValidation.validate(getLibrary)
 
-            if libraryBookError:
-                return libraryBookError, 422
+            if libraryBookValidationError:
+                return libraryBookValidationError, 422
 
             else:
                 library = db.query(Library).where(Library.id == int(getLibrary["libraryId"])).first()
@@ -365,13 +368,14 @@ def get_library_by_id():
 def get_book():
     db = get_db()
     getBook = request.json
+    idValidation = IdJsonValidation()
+    createBookValidation = CreateBookJsonValidation()
+    idValidationError = idValidation.validate(getBook)
 
     match request.method:
         case "GET":
-            idError = IdRequest().validate(getBook)
-
-            if idError:
-                return idError, 422
+            if idValidationError:
+                return idValidationError, 422
             
             else:
                 book = db.query(Book).where(Book.id == int(getBook["id"])).first()
@@ -391,10 +395,10 @@ def get_book():
 
 
         case "POST":
-            createBookError = CreateBook().validate(getBook)
+            createBookValidationError = createBookValidation.validate(getBook)
 
-            if createBookError:
-                return createBookError, 422
+            if createBookValidationError:
+                return createBookValidationError, 422
             
             else:
                 newBook = Book(title=getBook["title"],
@@ -408,10 +412,8 @@ def get_book():
                 return f"{newBook.title} by {newBook.author} has been added to database"
         
         case "DELETE":
-            idError = IdRequest().validate(getBook)
-
-            if idError:
-                return idError, 422
+            if idValidationError:
+                return idValidationError, 422
             
             else:
                 deletedBook = db.query(Book).where(Book.id == int(getBook["id"])).first()
@@ -428,12 +430,12 @@ def get_book():
 def get_user_book_reads():
     db = get_db()
     getBook = request.json
+    idValidation = IdJsonValidation()
+    idValidationError = idValidation.validate(getBook)
 
     if request.method == "GET":
-        idError = IdRequest().validate(getBook)
-
-        if idError:
-            return idError, 422
+        if idValidationError:
+            return idValidationError, 422
         
         else:
             book = db.query(Book).where(Book.id == getBook["id"]).first()
@@ -449,13 +451,14 @@ def get_user_book_reads():
 def leave_review():
     db = get_db()
     getReview = request.json
+    idValidation = IdJsonValidation()
+    createReviewValidation = CreateReviewJsonValidation()
+    idValidationError = idValidation.validate(getReview)
 
     match request.method:
         case "GET":
-            idError = IdRequest().validate(getReview)
-
-            if idError:
-                return idError, 422
+            if idValidationError:
+                return idValidationError, 422
 
             else:
                 review = db.query(Review).where(Review.id == getReview["id"]).first()
@@ -474,10 +477,10 @@ def leave_review():
                     return jsonify(result), 200
 
         case "POST":
-            createReviewError = CreateReview().validate(getReview)
+            createReviewValidationError = createReviewValidation.validate(getReview)
 
-            if createReviewError:
-                return createReviewError, 422
+            if createReviewValidationError:
+                return createReviewValidationError, 422
             
             else:
                 getUser = db.query(User).where(User.id == int(getReview["userId"])).first()
@@ -499,10 +502,8 @@ def leave_review():
             
         
         case "DELETE":
-            idError = IdRequest().validate(getReview)
-
-            if idError:
-                return idError, 422
+            if idValidationError:
+                return idValidationError, 422
 
             else:
                 deletedReview = db.query(Review).where(Review.id == getReview["id"]).first()
