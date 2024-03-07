@@ -1,15 +1,19 @@
-from data import User, Library, Book, Review, BookProgress, ReadingSession, Admin
+from data import User, Library, Book, Review, BookProgress, ReadingSession
 from flask import Flask, jsonify, request
-from data import get_db
+from data import get_db, init_app
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timedelta
-from marshSchema import IdJsonValidation, CreateUserJsonValidation, UserBookIdJsonValidation 
+from marshSchema import IdJsonValidation, CreateUserJsonValidation, UserBookIdJsonValidation, adminToggleJsonValidation
 from marshSchema import UserReadJsonValidation, CreateUserReadJsonValidation, CreateLibraryJsonValidation, LibraryBookIdJsonValidation, CreateBookJsonValidation, CreateReviewJsonValidation
+# from blueprints import userPage
 
 # TODO: Postman script 
 # TODO: flask BluePrints
 
 app = Flask(__name__)
+init_app(app)
+
+# app.register_blueprint(userPage)
 
 @app.route("/user", methods=["GET", "POST", "DELETE"])
 def user():
@@ -38,7 +42,8 @@ def user():
                     "lastName": getUser.lastName,
                     "username": getUser.username,
                     "email": getUser.email,
-                    "password": getUser.password
+                    "password": getUser.password,
+                    "admin": getUser.admin
                 }
                     return jsonify(result), 200
 
@@ -271,6 +276,44 @@ def get_libraries_by_user():
 
                     return jsonify(result), 200
 
+@app.route("/admin", methods=["GET", "PUT"])
+def admin_add_book():
+    db = get_db()
+    toggleAdmin = request.json
+    adminValidation = adminToggleJsonValidation()
+    match request.method:
+        case "GET":
+            allAdmins = db.query(User).where(User.admin == True).all()
+            result = [u.username for u in allAdmins]
+            password = "123adminisme"
+
+        case "POST":
+            adminValidationError = adminValidation.validate(toggleAdmin)
+            
+            if adminValidationError:
+                return adminValidationError, 422
+            
+            else:
+                getUser = db.query(User).where(User.id == int(toggleAdmin["id"])).first()
+                
+                if not getUser or toggleAdmin["password"] != password:
+                    return "User not found or password incorrect", 404
+                
+                elif toggleAdmin["password"] == password:
+                
+                    if getUser.admin == True:
+                        getUser.admin = False
+
+                        db.commit()
+                        return f"{getUser.username} is no longer an admin", 200
+                    
+                    elif getUser.admin == False:
+                        getUser.admin = True
+
+                        db.commit()
+                        return f"{getUser.username} is now an admin", 200
+                
+
 
 @app.route("/library", methods=["GET", "POST", "DELETE", "PUT"])
 def get_library_by_id():
@@ -288,14 +331,14 @@ def get_library_by_id():
             
             else:
                 library = db.query(Library).where(Library.id == int(getLibrary["id"])).first()
-                libraryBooks = []
 
                 if not library:
                     return "Library not found", 404
 
                 else:
-                    for b in sorted(library.books, key=lambda b: b.author):
-                        libraryBooks.append(b.title, b.author)
+                    # for b in sorted(library.books, key=lambda b: b.author):
+                    #     libraryBooks.append(b.title, b.author)
+                    libraryBooks = [(b.title, b.author) for b in sorted(library.books, key=lambda b: b.author)]
 
                     result = {
                         "Id": library.id,
@@ -517,9 +560,7 @@ def leave_review():
                     return f"Review id:{deletedReview.id}, has be deleted", 200
 
 # TODO: intergrate (https://openlibrary.org/developers/api)
-@app.route("/admin")
-def admin_add_book():
-    ...
+
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

@@ -44,3 +44,7 @@ class CreateReviewJsonValidation(Schema):
     content = fields.Str(required=True,
                         validate=validate.Length(min= 10, max= 250)
                         )
+    
+class adminToggleJsonValidation(Schema):
+    userId = fields.Int(required=True)
+    password = fields.Str(required=True)

@@ -1,4 +1,4 @@
-from sqlalchemy import String
+from sqlalchemy import String, Boolean
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import mapped_column
 from sqlalchemy import Column
@@ -20,6 +20,7 @@ class User(Base):
     username = mapped_column(String(), unique=True)
     email = mapped_column(String(), unique=True)
     password = mapped_column(String())
+    admin = mapped_column(Boolean(), default=False)
 
     libraries = relationship("Library", back_populates="user")
     reviews = relationship("Review", back_populates="user")
