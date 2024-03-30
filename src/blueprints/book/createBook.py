@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from data import get_db, Book
 from marshSchema import CreateBookJsonValidation
 

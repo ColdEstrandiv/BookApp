@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
-from data import get_db, Review
+from data import get_db
+from data import Review
 
 getReviewById = Blueprint('getReviewById', __name__, template_folder='blueprints')
 
@@ -18,6 +19,7 @@ def review_by_id(id):
                 "id": getReview.id,
                 "user": getReview.user.username,
                 "book": f"{getReview.book.title} by {getReview.book.author}",
+                "pageCount": getReview.book.pageCount,
                 "content": getReview.content
             }
 

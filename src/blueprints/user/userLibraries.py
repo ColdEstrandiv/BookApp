@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify
 from data import get_db
 from data import User
 
@@ -13,6 +13,13 @@ def get_user_libraries(id):
     if not getUser:
         return "User not found", 404
 
-    libraries = [f'{l.name}, ID: {l.id}' for l in sorted(getUser.libraries, key=lambda n: n.name)]
+    libraries = [
+        {
+        "id": l.id,
+        "name": l.name,
+        "books": len(l.books)
+        }
+        for l in sorted(getUser.libraries, key=lambda n: n.name)
+        ]
 
-    return f"User libraries: {libraries}", 200
+    return jsonify(libraries), 200

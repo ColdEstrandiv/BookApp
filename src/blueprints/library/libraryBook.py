@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint
 from data import get_db
 from data import Library, Book
 

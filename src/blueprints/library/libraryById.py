@@ -15,9 +15,9 @@ def library_by_id(id):
             if not getLibrary:
                 return "Library not found", 404
             
-            libraryBooks = [(b.title, b.author) for b in sorted(getLibrary.books, key=lambda b: b.author)]
+            libraryBooks = [(f'{b.title} by {b.author}') for b in sorted(getLibrary.books, key=lambda b: b.author)]
             result = {
-                "Id": getLibrary.id,
+                "id": getLibrary.id,
                 "name": getLibrary.name,
                 "user": getLibrary.user.username,
                 "books": libraryBooks
