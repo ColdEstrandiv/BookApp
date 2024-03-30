@@ -20,6 +20,7 @@ def book_progress_by_id(id):
                 "user": getBookProgress.user.username,
                 "book": getBookProgress.book.title,
                 "status": getBookProgress.status,
+                "readingSessions": len(getBookProgress.readingSessions)
             }
 
             return jsonify(result)

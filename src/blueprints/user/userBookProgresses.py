@@ -4,7 +4,7 @@ from data import User
 
 getUserBookProgresses = Blueprint('getUserBookProgresses', __name__, template_folder='blueprints')
 
-@getUserBookProgresses.route("/user/<id>/BookProgresses", methods=["GET"])
+@getUserBookProgresses.route("/user/<id>/bookProgresses", methods=["GET"])
 def get_user_book_progresses(id):
     db = get_db()
 
@@ -16,8 +16,9 @@ def get_user_book_progresses(id):
     bookProgresses = [
         {
         "id": b.id,
-        "user": b.user.username,
-        "book": f'{b.book.title} by {b.book.author}'
+        "book": f'{b.book.title} by {b.book.author}',
+        "status": b.status,
+        "reads": len(b.readingSessions)
         }
         for b in sorted(getUser.bookProgresses, key=lambda s: s.status)
         ]

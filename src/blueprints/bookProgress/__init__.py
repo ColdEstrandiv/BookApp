@@ -1,2 +1,3 @@
 from .bookProgresById import bookProgressById
 from .createBookProgress import createBookProgress
+from .bookProgressReadings import getBookProgressReadings
