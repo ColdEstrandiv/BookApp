@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from blueprints import userById, createNewUser, bookProgressById, createBookProgress, getUserLibraries, library, creatNewLibrary, userReadsById, createNewBook, getBookbyId, createNewRead, getReadById
-from blueprints import createNewReview, getReviewById, addLibraryBook, getBookReaders, getAllusers, getAllBooks, getUserReviews, getUserBookProgresses, getBookProgressReadings
+from blueprints import createNewReview, getReviewById, addRemoveLibraryBook, getBookReaders, getAllusers, getAllBooks, getUserReviews, getUserBookProgresses, getBookProgressReadings, getBooksNotInLibrary, getAllLibraryBooks
 
 app = Flask(__name__)
 CORS(app, resource={
@@ -47,7 +47,13 @@ app.register_blueprint(getReadById)
 app.register_blueprint(library)
 
 # /library/<lId>/book/<bId>
-app.register_blueprint(addLibraryBook)
+app.register_blueprint(addRemoveLibraryBook)
+
+# /library/<id>/otherBooks
+app.register_blueprint(getBooksNotInLibrary)
+
+# /library/<id>/books
+app.register_blueprint(getAllLibraryBooks)
 
 # /user/<id>/library
 app.register_blueprint(creatNewLibrary)

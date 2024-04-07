@@ -18,6 +18,7 @@ def book_progress_by_id(id):
             result ={
                 "id": getBookProgress.id,
                 "user": getBookProgress.user.username,
+                "userId": getBookProgress.userId,
                 "book": getBookProgress.book.title,
                 "status": getBookProgress.status,
                 "readingSessions": len(getBookProgress.readingSessions)
@@ -28,7 +29,7 @@ def book_progress_by_id(id):
         case "DELETE":
             deletedBookProgress = db.query(BookProgress).where(BookProgress.id == int(id)).first()
 
-            if not getBookProgress:
+            if not deletedBookProgress:
                 return "No progress to delete", 404
 
             dbpUser = deletedBookProgress.user

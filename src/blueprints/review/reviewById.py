@@ -18,6 +18,7 @@ def review_by_id(id):
             result = {
                 "id": getReview.id,
                 "user": getReview.user.username,
+                "userId": getReview.userId,
                 "book": f"{getReview.book.title} by {getReview.book.author}",
                 "pageCount": getReview.book.pageCount,
                 "content": getReview.content

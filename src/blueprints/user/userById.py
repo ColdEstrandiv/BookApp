@@ -4,17 +4,17 @@ from data import User
 
 userById = Blueprint('userById', __name__, template_folder='blueprints')
 
-@userById.route("/user/<id>", methods=["GET", "DELETE"])
+@userById.route("/user/<id>", methods=["GET", "DELETE", "PUT"])
 def user_by_id(id):
     db = get_db()
+    getUser = db.query(User).where(User.id == int(id)).first()
+
+    if not getUser:
+        return "User not found", 422
 
     match request.method:
         case "GET":
-            getUser = db.query(User).where(User.id == int(id)).first()
-            
-            if not getUser:
-                return "User not found", 422
-            
+                        
             result = {
                 "id": getUser.id,
                 "firstName": getUser.firstName,
@@ -27,10 +27,18 @@ def user_by_id(id):
             return jsonify(result), 200
         
         case"DELETE":
-            deletedUser = db.query(User).where(User.id == int(id)).first()
-            if not deletedUser:
-                    return "No user to be deleted", 404
                 
-            db.delete(deletedUser)
+            db.delete(getUser)
             db.commit()
-            return f"{deletedUser.username} has been deleted", 200           
+            return jsonify(f"{getUser.username} has been deleted", 200)
+
+        case"PUT":
+            if getUser.admin == False:
+                getUser.admin = True
+                db.commit()
+                return f"{getUser.username} made admin", 200
+            
+            else:
+                getUser.admin = False
+                db.commit()
+                return f"{getUser.username} admin revoked", 200

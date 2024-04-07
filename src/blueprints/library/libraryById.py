@@ -20,6 +20,7 @@ def library_by_id(id):
                 "id": getLibrary.id,
                 "name": getLibrary.name,
                 "user": getLibrary.user.username,
+                "userId": getLibrary.userId,
                 "books": libraryBooks
             }           
 
@@ -30,6 +31,8 @@ def library_by_id(id):
             
             if not deletedLibrary:
                 return "library not found", 404
+            
+            deletedLibrary.books = []
             
             db.delete(deletedLibrary)
             db.commit()

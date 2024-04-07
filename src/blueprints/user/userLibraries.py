@@ -12,6 +12,9 @@ def get_user_libraries(id):
     
     if not getUser:
         return "User not found", 404
+    
+    if not getUser.libraries:
+        return "User has no libraries", 200
 
     libraries = [
         {

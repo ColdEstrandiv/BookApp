@@ -4,7 +4,7 @@ from data import BookProgress, User, Book
 
 createBookProgress = Blueprint('createBookProgress', __name__, template_folder='blueprints')
 
-@createBookProgress.route("/user/<uId>/bookProgress/book/<bId>", methods=["POST"])
+@createBookProgress.route("/user/<uId>/book/<bId>/bookProgress", methods=["POST"])
 def create_book_progress(uId, bId):
     db = get_db()
 
