@@ -15,17 +15,16 @@ def library_Books(id):
             if not getLibrary:
                 return "Library not found", 404
             
-            if len(getLibrary.books) > 0:
-                result = [
-                    {
-                    "id": b.id,
-                    "title": b.title,
-                    "author": b.author,
-                    "pageCount": b.pageCount
-                    }
-                    for b in sorted(getLibrary.books, key=lambda b: b.author)
-                    ]
-                return jsonify(result), 200
+            result = [
+                {
+                "id": b.id,
+                "title": b.title,
+                "author": b.author,
+                "pageCount": b.pageCount
+                }
+                for b in sorted(getLibrary.books, key=lambda b: b.author)
+                ]
+            return jsonify(result), 200
             
-            return None, 200
+
         
