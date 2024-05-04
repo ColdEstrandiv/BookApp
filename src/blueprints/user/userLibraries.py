@@ -22,7 +22,7 @@ def get_user_libraries(id):
         "name": l.name,
         "books": len(l.books)
         }
-        for l in sorted(getUser.libraries, key=lambda n: n.name)
+        for l in sorted(getUser.libraries, key=lambda n: n.id)
         ]
 
     return jsonify(libraries), 200
