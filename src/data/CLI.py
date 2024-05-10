@@ -1,4 +1,4 @@
-from data import User, Library, Book, Review, BookProgress, ReadingSession, Admin
+from data import User, Library, Book, Review, BookProgress, ReadingSession
 import click
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
@@ -107,14 +107,14 @@ def complete_book(book_progress_id):
     bookProgressDb.status = "Completed"
     session.commit()
 
-@click.command(help="<username> <password>")
-@click.argument("admin_username")
-@click.argument("admin_password")
-def create_admin(admin_username, admin_password):
-    new_admin = Admin(username=admin_username, password=admin_password)
+# @click.command(help="<username> <password>")
+# @click.argument("admin_username")
+# @click.argument("admin_password")
+# def create_admin(admin_username, admin_password):
+#     new_admin = Admin(username=admin_username, password=admin_password)
     
-    session.add(new_admin)
-    session.commit()
+#     session.add(new_admin)
+#     session.commit()
 
 @click.command(help="<Object> <id>")
 @click.argument("object")
@@ -136,7 +136,7 @@ cli.add_command(create_read_session)
 cli.add_command(add_library_book)
 cli.add_command(complete_book)
 cli.add_command(del_obj_id)
-cli.add_command(create_admin)
+# cli.add_command(create_admin)
 
 if __name__ == "__main__":
     cli()

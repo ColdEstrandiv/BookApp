@@ -1,4 +1,4 @@
-from sqlalchemy import String
+from sqlalchemy import String, Boolean
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import mapped_column
 from sqlalchemy import Column
@@ -20,10 +20,11 @@ class User(Base):
     username = mapped_column(String(), unique=True)
     email = mapped_column(String(), unique=True)
     password = mapped_column(String())
+    admin = mapped_column(Boolean(), default=False)
 
-    libraries = relationship("Library", back_populates="user")
+    libraries = relationship("Library", back_populates="user", cascade="all, delete, delete-orphan")
     reviews = relationship("Review", back_populates="user")
-    bookProgresses = relationship("BookProgress", back_populates="user")
+    bookProgresses = relationship("BookProgress", back_populates="user", cascade="all, delete, delete-orphan")
     
 library_book_association = Table('library_book_association', Base.metadata,
 Column('library_id', Integer, ForeignKey('library.id')),
@@ -69,7 +70,7 @@ class BookProgress(Base):
     status = mapped_column(String(), default= "Started")
 
     user = relationship("User", back_populates="bookProgresses")
-    readingSessions = relationship("ReadingSession", back_populates="bookProgress")
+    readingSessions = relationship("ReadingSession", back_populates="bookProgress", cascade="all, delete, delete-orphan")
     book = relationship("Book", back_populates="bookProgresses")
 
 class ReadingSession(Base):
@@ -82,8 +83,8 @@ class ReadingSession(Base):
 
     bookProgress = relationship("BookProgress", back_populates= "readingSessions")
 
-class Admin(Base):
-    __tablename__ = "admins"
-    id = mapped_column(Integer, primary_key=True)
-    username = mapped_column(String(), unique=True)
-    password = mapped_column(String())
+# class Admin(Base):
+#     __tablename__ = "admins"
+#     id = mapped_column(Integer, primary_key=True)
+#     username = mapped_column(String(), unique=True)
+#     password = mapped_column(String())
